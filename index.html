@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Đăng Nhập - Hệ Thống QLSV</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+    <h2 class="text-2xl font-bold text-center mb-6 text-indigo-400">Cổng Đăng Nhập</h2>
+    
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Tài khoản (MSV / Admin)</label>
+        <input type="text" id="login-id" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Mật khẩu</label>
+        <input type="password" id="login-password" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+      </div>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-2 rounded-lg transition">
+        Đăng Nhập
+      </button>
+      <div id="login-msg" class="text-sm text-center mt-2 font-medium hidden"></div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyA6MzA5S1JxABA6PPsiH1dV_JjMpoqkxIM",
+      authDomain: "quan-ly-sinh-vien-e3307.firebaseapp.com",
+      projectId: "quan-ly-sinh-vien-e3307",
+      storageBucket: "quan-ly-sinh-vien-e3307.firebasestorage.app",
+      messagingSenderId: "1021646737843",
+      appId: "1:1021646737843:web:7edb6d3be5257c4d10fbc6"
+    });
+    const db = getFirestore(app);
+
+    // Thuật toán: Base64 -> Homoglyph -> SHA-256
+    const map = {'A':'А','B':'В','C':'С','E':'Е','H':'Н','I':'І','J':'Ј','K':'К','M':'М','O':'О','P':'Р','T':'Т','X':'Х','Y':'Ү','a':'а','b':'Ь','c':'с','d':'ԁ','e':'е','f':'𝚏','g':'ɡ','h':'һ','i':'і','j':'ϳ','k':'κ','l':'ⅼ','m':'ｍ','n':'ո','o':'о','p':'р','q':'ԛ','r':'г','s':'ѕ','t':'𝚝','u':'ս','v':'ѵ','w':'ѡ','x':'х','y':'у','z':'z','0':'૦','1':'١','2':'𝟐','3':'𝟯','4':'𝟺','5':'５','6':'б','7':'7','8':'8','9':'9','+':'➕','/':'⧸','=':'🟰'};
+    async function processCustomPassword(pw) {
+      const base64 = btoa(unescape(encodeURIComponent(pw)));
+      const obf = base64.split('').map(c => map[c] || c).join('');
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(obf));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Kiểm tra Session cũ
+    const currentSession = JSON.parse(localStorage.getItem('userSession'));
+    if(currentSession) {
+      window.location.href = currentSession.role === 'admin' ? 'admin.html' : 'dashboard.html';
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('login-id').value.trim();
+      const pw = document.getElementById('login-password').value;
+      const msg = document.getElementById('login-msg');
+
+      try {
+        const userDoc = await getDoc(doc(db, "users", id));
+        if (!userDoc.exists()) {
+          msg.textContent = "Tài khoản không tồn tại!"; msg.className = "text-sm text-center mt-2 text-red-400"; msg.classList.remove('hidden');
+          return;
+        }
+
+        const data = userDoc.data();
+        const inputHash = await processCustomPassword(pw);
+
+        if (inputHash === data.passwordHash) {
+          // Lưu Session
+          localStorage.setItem('userSession', JSON.stringify({ uid: id, role: data.role }));
+          // Chuyển hướng
+          window.location.href = data.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        } else {
+          msg.textContent = "Mật khẩu không chính xác!"; msg.className = "text-sm text-center mt-2 text-red-400"; msg.classList.remove('hidden');
+        }
+      } catch (error) {
+        msg.textContent = "Lỗi kết nối!"; msg.classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
