@@ -9,7 +9,7 @@
   <div class="max-w-7xl mx-auto space-y-6">
     
     <!-- Header -->
-    <div class="flex justify-between items-center bg-gray-800 p-6 rounded-2xl border border-gray-700">
+    <div class="flex justify-between items-center bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
       <div>
         <h1 class="text-2xl font-bold text-indigo-400">Admin Control Panel 👑</h1>
         <p id="admin-greeting" class="text-sm text-gray-400 mt-1">Đang tải...</p>
@@ -23,15 +23,15 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       
       <!-- CỘT TRÁI: FORM TẠO TÀI KHOẢN -->
-      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 h-fit">
-        <h2 class="text-lg font-semibold mb-4 text-green-400">Tạo Tài Khoản Mới</h2>
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 h-fit shadow-md">
+        <h2 class="text-lg font-semibold mb-4 text-green-400 border-b border-gray-700 pb-2">Tạo Tài Khoản Mới</h2>
         <form id="admin-form" class="space-y-4">
           
           <div>
             <label class="block text-sm font-medium mb-1 text-gray-300">Loại tài khoản</label>
-            <select id="user-role" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition">
-              <option value="sinh_vien">Sinh Viên</option>
-              <option value="admin">Quản Trị Viên (Admin)</option>
+            <select id="user-role" class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-sm">
+              <option value="sinh_vien">Tài Khoản Sinh Viên</option>
+              <option value="admin">Tài Khoản Quản Trị (Admin)</option>
             </select>
           </div>
 
@@ -41,7 +41,7 @@
           </div>
 
           <!-- Ô nhập Lớp (Sẽ bị ẩn nếu chọn Role là Admin) -->
-          <div id="class-container">
+          <div id="class-container" class="transition-all duration-300">
             <label class="block text-sm font-medium mb-1 text-gray-300">Lớp Sinh Hoạt</label>
             <input type="text" id="user-class" placeholder="Ví dụ: DCT23A..." class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 outline-none font-mono text-sm">
           </div>
@@ -52,41 +52,71 @@
           </div>
           
           <button type="submit" class="w-full bg-green-600 hover:bg-green-500 font-semibold py-2.5 rounded-lg transition mt-4 text-sm shadow-lg">
-            Tạo Tài Khoản
+            Khởi Tạo Tài Khoản
           </button>
           <div id="admin-msg" class="text-sm text-center mt-2 font-medium hidden"></div>
         </form>
       </div>
 
-      <!-- CỘT PHẢI: QUẢN LÝ TÀI KHOẢN -->
-      <div class="lg:col-span-2 bg-gray-800 p-6 rounded-2xl border border-gray-700">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold text-indigo-300">Danh Sách Tài Khoản</h2>
-          <button id="btn-refresh" class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-md border border-gray-600 transition">
-            🔄 Làm mới
+      <!-- CỘT PHẢI: QUẢN LÝ TÀI KHOẢN (2 BẢNG) -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Khu vực điều khiển tải lại chung -->
+        <div class="flex justify-end">
+          <button id="btn-refresh" class="text-sm bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg border border-gray-600 transition flex items-center space-x-2">
+            <span>🔄 Làm mới toàn bộ dữ liệu</span>
           </button>
         </div>
-        
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-gray-700 text-gray-400 text-sm">
-                <th class="py-3 px-2">ID / MSV</th>
-                <th class="py-3 px-2">Vai Trò</th>
-                <th class="py-3 px-2">Lớp</th>
-                <th class="py-3 px-2">Ngày Tạo</th>
-                <th class="py-3 px-2 text-center">Thao Tác</th>
-              </tr>
-            </thead>
-            <tbody id="user-table-body" class="divide-y divide-gray-700 text-sm">
-              <tr>
-                <td colspan="5" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
+        <!-- BẢNG 1: DANH SÁCH SINH VIÊN -->
+        <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
+          <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+            <h2 class="text-lg font-semibold text-blue-400">🎓 Danh Sách Sinh Viên</h2>
+            <span id="count-sv" class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded-full font-bold">0</span>
+          </div>
+          
+          <div class="overflow-x-auto max-h-80 overflow-y-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-gray-800">
+                <tr class="border-b border-gray-700 text-gray-400 text-sm">
+                  <th class="py-3 px-2">MSV</th>
+                  <th class="py-3 px-2">Lớp</th>
+                  <th class="py-3 px-2">Ngày Tạo</th>
+                  <th class="py-3 px-2 text-center w-24">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="table-sv" class="divide-y divide-gray-700 text-sm">
+                <tr><td colspan="4" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- BẢNG 2: DANH SÁCH ADMIN -->
+        <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
+          <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
+            <h2 class="text-lg font-semibold text-red-400">🛡️ Danh Sách Quản Trị Viên</h2>
+            <span id="count-admin" class="bg-red-900 text-red-200 text-xs px-2 py-1 rounded-full font-bold">0</span>
+          </div>
+          
+          <div class="overflow-x-auto max-h-60 overflow-y-auto">
+            <table class="w-full text-left border-collapse">
+              <thead class="sticky top-0 bg-gray-800">
+                <tr class="border-b border-gray-700 text-gray-400 text-sm">
+                  <th class="py-3 px-2">ID Admin</th>
+                  <th class="py-3 px-2">Người Tạo</th>
+                  <th class="py-3 px-2">Ngày Tạo</th>
+                  <th class="py-3 px-2 text-center w-24">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="table-admin" class="divide-y divide-gray-700 text-sm">
+                <tr><td colspan="4" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div> <!-- Hết Cột Phải -->
     </div>
   </div>
 
@@ -139,58 +169,82 @@
       }
     });
 
-    // 4. Load danh sách User lên bảng
-    const userTableBody = document.getElementById('user-table-body');
+    // 4. Load dữ liệu và chia 2 bảng
+    const tableSV = document.getElementById('table-sv');
+    const tableAdmin = document.getElementById('table-admin');
+    const countSV = document.getElementById('count-sv');
+    const countAdmin = document.getElementById('count-admin');
     
     async function loadUsers() {
-      userTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td></tr>`;
+      tableSV.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td></tr>`;
+      tableAdmin.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-gray-500">Đang tải dữ liệu...</td></tr>`;
+      
       try {
         const querySnapshot = await getDocs(collection(db, "users"));
-        userTableBody.innerHTML = "";
         
-        if (querySnapshot.empty) {
-          userTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-gray-500">Chưa có tài khoản nào.</td></tr>`;
-          return;
-        }
+        let htmlSV = "";
+        let htmlAdmin = "";
+        let numSV = 0;
+        let numAdmin = 0;
 
         querySnapshot.forEach((docSnap) => {
           const user = docSnap.data();
           const date = user.createdAt ? new Date(user.createdAt).toLocaleDateString('vi-VN') : 'N/A';
-          const roleBadge = user.role === 'admin' 
-            ? '<span class="px-2 py-0.5 bg-red-900 text-red-300 rounded text-xs font-bold">Admin</span>' 
-            : '<span class="px-2 py-0.5 bg-blue-900 text-blue-300 rounded text-xs font-bold">Sinh viên</span>';
-            
-          const lopStr = user.lop ? `<span class="font-mono text-gray-300">${user.lop}</span>` : '<span class="text-gray-600">-</span>';
-
-          const tr = document.createElement('tr');
-          tr.className = "hover:bg-gray-750 transition";
-          tr.innerHTML = `
-            <td class="py-3 px-2 font-mono text-gray-200">${user.msv}</td>
-            <td class="py-3 px-2">${roleBadge}</td>
-            <td class="py-3 px-2">${lopStr}</td>
-            <td class="py-3 px-2 text-gray-400 text-xs">${date}</td>
-            <td class="py-3 px-2 text-center">
-              <button onclick="deleteUser('${user.msv}')" class="bg-red-600 hover:bg-red-500 text-white text-xs px-3 py-1.5 rounded transition">Xóa</button>
-            </td>
-          `;
-          userTableBody.appendChild(tr);
+          
+          if(user.role === 'sinh_vien') {
+            numSV++;
+            const lopStr = user.lop ? `<span class="font-mono text-blue-300">${user.lop}</span>` : '<span class="text-gray-600">-</span>';
+            htmlSV += `
+              <tr class="hover:bg-gray-750 transition">
+                <td class="py-3 px-2 font-mono text-gray-200">${user.msv}</td>
+                <td class="py-3 px-2">${lopStr}</td>
+                <td class="py-3 px-2 text-gray-400 text-xs">${date}</td>
+                <td class="py-3 px-2 text-center">
+                  <button onclick="deleteUser('${user.msv}')" class="bg-gray-700 hover:bg-red-600 text-gray-300 hover:text-white text-xs px-3 py-1.5 rounded transition">Xóa</button>
+                </td>
+              </tr>
+            `;
+          } 
+          else if(user.role === 'admin') {
+            numAdmin++;
+            const creator = user.createdBy ? `<span class="text-gray-400 text-xs">${user.createdBy}</span>` : '<span class="text-gray-600">-</span>';
+            htmlAdmin += `
+              <tr class="hover:bg-gray-750 transition">
+                <td class="py-3 px-2 font-mono text-red-300 font-semibold">${user.msv}</td>
+                <td class="py-3 px-2">${creator}</td>
+                <td class="py-3 px-2 text-gray-400 text-xs">${date}</td>
+                <td class="py-3 px-2 text-center">
+                  <button onclick="deleteUser('${user.msv}')" class="bg-gray-700 hover:bg-red-600 text-gray-300 hover:text-white text-xs px-3 py-1.5 rounded transition">Xóa</button>
+                </td>
+              </tr>
+            `;
+          }
         });
+
+        // Cập nhật giao diện
+        tableSV.innerHTML = numSV > 0 ? htmlSV : `<tr><td colspan="4" class="text-center py-6 text-gray-500">Chưa có sinh viên nào.</td></tr>`;
+        tableAdmin.innerHTML = numAdmin > 0 ? htmlAdmin : `<tr><td colspan="4" class="text-center py-6 text-gray-500">Chưa có Admin nào.</td></tr>`;
+        
+        countSV.textContent = numSV;
+        countAdmin.textContent = numAdmin;
+
       } catch (error) {
-        userTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-400">Lỗi: ${error.message}</td></tr>`;
+        tableSV.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-400">Lỗi: ${error.message}</td></tr>`;
+        tableAdmin.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-red-400">Lỗi: ${error.message}</td></tr>`;
       }
     }
 
-    // 5. Hàm Xóa User (Đưa vào window để gọi từ onclick trong HTML)
+    // 5. Hàm Xóa User 
     window.deleteUser = async (msv) => {
       if(msv === session.uid) {
-        alert("Master không thể tự xóa chính tài khoản mình đang đăng nhập đâu ạ! 🚫");
+        alert("Master FoxST định tự hủy tài khoản của chính mình sao? Bé Lôi không cho phép đâu nha! 🚫");
         return;
       }
-      if(confirm(`Master có chắc chắn muốn xóa tài khoản: ${msv}?`)) {
+      if(confirm(`Cảnh báo: Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản [${msv}] không?`)) {
         try {
           await deleteDoc(doc(db, "users", msv));
           alert(`Đã xóa tài khoản ${msv} thành công!`);
-          loadUsers(); // Tải lại bảng
+          loadUsers(); // Tải lại 2 bảng
         } catch (error) {
           alert("Lỗi khi xóa: " + error.message);
         }
@@ -213,25 +267,30 @@
           msv: userId,
           passwordHash: secureHash,
           role: selectedRole,
-          lop: lop, // Lưu thêm thông tin lớp
+          lop: lop, 
           createdAt: new Date().toISOString(),
           createdBy: session.uid
         });
         
         msg.textContent = `Tạo thành công: ${userId}`; 
         msg.className = "text-sm text-center mt-3 text-green-400 block"; 
+        
+        // Reset form và UI
         document.getElementById('admin-form').reset();
-        classContainer.classList.remove('hidden'); // Reset UI
+        classContainer.classList.remove('hidden'); 
         
         // Tự động load lại bảng danh sách
         loadUsers();
+        
+        // Ẩn thông báo sau 3s
+        setTimeout(() => { msg.classList.add('hidden'); }, 3000);
       } catch (error) {
         msg.textContent = "Lỗi tạo tài khoản!"; 
         msg.className = "text-sm text-center mt-3 text-red-400 block"; 
       }
     });
 
-    // Chạy load dữ liệu lần đầu khi mở trang
+    // Chạy load dữ liệu lần đầu
     document.getElementById('btn-refresh').addEventListener('click', loadUsers);
     loadUsers();
   </script>
