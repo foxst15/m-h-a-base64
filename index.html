@@ -18,7 +18,7 @@
         <label class="block text-sm font-medium mb-1">Mật khẩu</label>
         <input type="password" id="login-password" required class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
       </div>
-      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-2 rounded-lg transition">
+      <button type="submit" id="login-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
         Đăng Nhập
       </button>
       <div id="login-msg" class="text-sm text-center mt-2 font-medium hidden"></div>
@@ -48,22 +48,87 @@
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    // Kiểm tra Session cũ
+    // 1. Kiểm tra Session cũ
     const currentSession = JSON.parse(localStorage.getItem('userSession'));
     if(currentSession) {
       window.location.href = currentSession.role === 'admin' ? 'admin.html' : 'dashboard.html';
     }
 
+    // 2. Logic Khóa Đăng Nhập (Lockout System)
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_TIME = 60000; // 60 giây (tính bằng milliseconds)
+    const btn = document.getElementById('login-btn');
+    const msg = document.getElementById('login-msg');
+
+    function checkLockoutStatus() {
+      const lockoutUntil = localStorage.getItem('lockoutUntil');
+      if (lockoutUntil) {
+        const remainingTime = parseInt(lockoutUntil) - Date.now();
+        if (remainingTime > 0) {
+          startCountdown(remainingTime);
+          return true; // Đang bị khóa
+        } else {
+          // Hết thời gian phạt -> Mở khóa
+          localStorage.removeItem('lockoutUntil');
+          localStorage.setItem('failedAttempts', '0');
+        }
+      }
+      return false; // Không bị khóa
+    }
+
+    function startCountdown(duration) {
+      btn.disabled = true; // Khóa nút
+      let timeLeft = Math.ceil(duration / 1000);
+      
+      msg.className = "text-sm text-center mt-2 font-bold text-red-500 block";
+      msg.textContent = `Bị khóa! Vui lòng thử lại sau ${timeLeft}s`;
+
+      const interval = setInterval(() => {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          btn.disabled = false; // Mở lại nút
+          msg.classList.add('hidden');
+          localStorage.removeItem('lockoutUntil');
+          localStorage.setItem('failedAttempts', '0');
+        } else {
+          msg.textContent = `Bị khóa! Vui lòng thử lại sau ${timeLeft}s`;
+        }
+      }, 1000);
+    }
+
+    function handleFailedAttempt() {
+      let attempts = parseInt(localStorage.getItem('failedAttempts') || '0');
+      attempts++;
+      
+      if (attempts >= MAX_ATTEMPTS) {
+        // Đạt 5 lần sai -> Phạt 1 phút
+        localStorage.setItem('lockoutUntil', Date.now() + LOCKOUT_TIME);
+        checkLockoutStatus();
+      } else {
+        localStorage.setItem('failedAttempts', attempts);
+        msg.textContent = `Sai thông tin! Bạn còn ${MAX_ATTEMPTS - attempts} lần thử.`;
+        msg.className = "text-sm text-center mt-2 text-red-400 block";
+      }
+    }
+
+    // Chạy kiểm tra khóa ngay khi vừa mở trang (phòng hờ user F5)
+    checkLockoutStatus();
+
+    // 3. Xử lý Submit Form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      // Nếu đang bị khóa thì cấm chạy các lệnh dưới
+      if (checkLockoutStatus()) return; 
+
       const id = document.getElementById('login-id').value.trim();
       const pw = document.getElementById('login-password').value;
-      const msg = document.getElementById('login-msg');
 
       try {
         const userDoc = await getDoc(doc(db, "users", id));
         if (!userDoc.exists()) {
-          msg.textContent = "Tài khoản không tồn tại!"; msg.className = "text-sm text-center mt-2 text-red-400"; msg.classList.remove('hidden');
+          handleFailedAttempt(); // Sai ID cũng tính là 1 lần thử sai
           return;
         }
 
@@ -71,15 +136,18 @@
         const inputHash = await processCustomPassword(pw);
 
         if (inputHash === data.passwordHash) {
-          // Lưu Session
+          // Đăng nhập thành công -> Xóa bộ đếm sai
+          localStorage.removeItem('failedAttempts');
+          localStorage.removeItem('lockoutUntil');
+          
           localStorage.setItem('userSession', JSON.stringify({ uid: id, role: data.role }));
-          // Chuyển hướng
           window.location.href = data.role === 'admin' ? 'admin.html' : 'dashboard.html';
         } else {
-          msg.textContent = "Mật khẩu không chính xác!"; msg.className = "text-sm text-center mt-2 text-red-400"; msg.classList.remove('hidden');
+          handleFailedAttempt(); // Sai mật khẩu
         }
       } catch (error) {
-        msg.textContent = "Lỗi kết nối!"; msg.classList.remove('hidden');
+        msg.textContent = "Lỗi kết nối CSDL!"; 
+        msg.className = "text-sm text-center mt-2 text-red-400 block";
       }
     });
   </script>

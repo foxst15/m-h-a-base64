@@ -11,7 +11,7 @@
     <!-- Header -->
     <div class="flex justify-between items-center bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
       <div>
-        <h1 class="text-2xl font-bold text-indigo-400">Admin Control Panel 👑</h1>
+        <h1 class="text-2xl font-bold text-indigo-400">HỆ THỐNG QUẢN TRỊ </h1>
         <p id="admin-greeting" class="text-sm text-gray-400 mt-1">Đang tải...</p>
       </div>
       <button id="btn-logout" class="bg-red-600 hover:bg-red-500 px-4 py-2 rounded-lg font-medium text-sm transition shadow-lg">
@@ -71,7 +71,7 @@
         <!-- BẢNG 1: DANH SÁCH SINH VIÊN -->
         <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
           <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h2 class="text-lg font-semibold text-blue-400">🎓 Danh Sách Sinh Viên</h2>
+            <h2 class="text-lg font-semibold text-blue-400">Danh Sách Sinh Viên</h2>
             <span id="count-sv" class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded-full font-bold">0</span>
           </div>
           
@@ -95,7 +95,7 @@
         <!-- BẢNG 2: DANH SÁCH ADMIN -->
         <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-md">
           <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-            <h2 class="text-lg font-semibold text-red-400">🛡️ Danh Sách Quản Trị Viên</h2>
+            <h2 class="text-lg font-semibold text-red-400">Danh Sách Quản Trị Viên</h2>
             <span id="count-admin" class="bg-red-900 text-red-200 text-xs px-2 py-1 rounded-full font-bold">0</span>
           </div>
           
@@ -237,7 +237,7 @@
     // 5. Hàm Xóa User 
     window.deleteUser = async (msv) => {
       if(msv === session.uid) {
-        alert("Master FoxST định tự hủy tài khoản của chính mình sao? Bé Lôi không cho phép đâu nha! 🚫");
+        alert("BẠN HÃY SUY NGHĨ LẠI TRƯỚC KHI XÓA 🚫");
         return;
       }
       if(confirm(`Cảnh báo: Bạn có chắc chắn muốn XÓA VĨNH VIỄN tài khoản [${msv}] không?`)) {
